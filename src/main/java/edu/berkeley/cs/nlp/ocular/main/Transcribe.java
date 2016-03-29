@@ -110,7 +110,8 @@ public class Transcribe extends FonttrainTranscribeShared {
 					0, updateDocBatchSize > 0 ? updateDocBatchSize : inputDocuments.size(), true, false,
 					numMstepThreads,
 					newInputDocPath, outputPath,
-					evalSetEvaluator, Integer.MAX_VALUE, evalBatches);
+					evalSetEvaluator, Integer.MAX_VALUE, evalBatches,
+					jkNoGsmOutput);
 		}
 		else {
 			//

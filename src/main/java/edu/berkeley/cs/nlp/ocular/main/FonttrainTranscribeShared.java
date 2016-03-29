@@ -61,6 +61,10 @@ public abstract class FonttrainTranscribeShared extends LineExtractionOptions {
 	@Option(gloss = "Should the model allow glyph substitutions? This includes substituted letters as well as letter elisions.")
 	public static boolean allowGlyphSubstitution = false;
 	
+	@Option(gloss = "Should GSM options be overridden so that the GSM is not used at all.")
+	public static boolean jkNoGsm = false;
+	public static String jkNoGsmOutput = null;
+
 	// The following options are only relevant if allowGlyphSubstitution is set to "true".
 	
 	@Option(gloss = "Path to the input glyph substitution model file. (Only relevant if allowGlyphSubstitution is set to true.) Default: Don't use a pre-initialized GSM. (Learn one from scratch).")
@@ -157,6 +161,7 @@ public abstract class FonttrainTranscribeShared extends LineExtractionOptions {
 		if (!updateLM && outputLmPath != null) throw new IllegalArgumentException("-outputLmPath not permitted when -updateLM is false.");
 		if (outputLmPath != null && outputFontPath == null) throw new IllegalArgumentException("It is not possible to retrain the LM (-updateLM=true) when not retraining the font (-updateFont=false).");
 
+		if (!jkNoGsm) {
 		if (updateGsm && !allowGlyphSubstitution) throw new IllegalArgumentException("-updateGsm not permitted if -allowGlyphSubstitution is false.");
 		if (inputGsmPath != null && !new File(inputGsmPath).exists()) throw new RuntimeException("inputGsmPath " + inputGsmPath + " does not exist [looking in "+(new File(".").getAbsolutePath())+"]");
 		if (inputGsmPath != null && !allowGlyphSubstitution) throw new IllegalArgumentException("-inputGsmPath not permitted if -allowGlyphSubstitution is false.");
@@ -165,6 +170,14 @@ public abstract class FonttrainTranscribeShared extends LineExtractionOptions {
 		if (!updateGsm && outputGsmPath != null) throw new IllegalArgumentException("-outputGsmPath not permitted when -updateGsm is false.");
 		if (allowGlyphSubstitution && inputGsmPath == null && outputGsmPath == null) throw new IllegalArgumentException("If -allowGlyphSubstitution=true, either an -inputGsmPath must be given, or a GSM must be trained by giving an -outputGsmPath.");
 		if (outputGsmPath != null && outputFontPath == null) throw new IllegalArgumentException("It is not possible to retrain the GSM (-updateGsm=true) when not retraining the font (-updateFont=false).");
+		}
+		else {
+			jkNoGsmOutput = outputGsmPath;
+			allowGlyphSubstitution = false;
+			inputGsmPath = null;
+			updateGsm = false;
+			outputGsmPath = null;
+		}
 
 		if (evalExtractedLinesPath != null && evalInputDocPath == null) throw new IllegalArgumentException("-evalExtractedLinesPath not permitted without -evalInputDocPath.");
 

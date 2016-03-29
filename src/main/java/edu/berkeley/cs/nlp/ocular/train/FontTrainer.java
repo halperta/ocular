@@ -23,6 +23,7 @@ import edu.berkeley.cs.nlp.ocular.eval.SingleDocumentEvaluatorAndOutputPrinter;
 import edu.berkeley.cs.nlp.ocular.font.Font;
 import edu.berkeley.cs.nlp.ocular.gsm.BasicGlyphSubstitutionModel.BasicGlyphSubstitutionModelFactory;
 import edu.berkeley.cs.nlp.ocular.gsm.GlyphSubstitutionModel;
+import edu.berkeley.cs.nlp.ocular.gsm.NoSubGlyphSubstitutionModel;
 import edu.berkeley.cs.nlp.ocular.lm.BasicCodeSwitchLanguageModel;
 import edu.berkeley.cs.nlp.ocular.lm.CodeSwitchLanguageModel;
 import edu.berkeley.cs.nlp.ocular.lm.SingleLanguageModel;
@@ -57,7 +58,8 @@ public class FontTrainer {
 				int numEMIters, int updateDocBatchSize, boolean noUpdateIfBatchTooSmall, boolean writeIntermediateModelsToTemp,
 				int numMstepThreads,
 				String inputDocPath, String outputPath,
-				MultiDocumentTranscriber evalSetIterationEvaluator, int evalFreq, boolean evalBatches) {
+				MultiDocumentTranscriber evalSetIterationEvaluator, int evalFreq, boolean evalBatches,
+				String jkNoGsmOutput) {
 		
 		System.out.println("trainFont(numEMIters="+numEMIters+", updateDocBatchSize="+updateDocBatchSize+", noUpdateIfBatchTooSmall="+noUpdateIfBatchTooSmall+", writeIntermediateModelsToTemp="+writeIntermediateModelsToTemp+")");
 		
@@ -92,7 +94,8 @@ public class FontTrainer {
 									numEMIters, updateDocBatchSize, noUpdateIfBatchTooSmall, writeIntermediateModelsToTemp,
 									numMstepThreads,
 									inputDocPath, outputPath,
-									evalSetIterationEvaluator, evalFreq, evalBatches);
+									evalSetIterationEvaluator, evalFreq, evalBatches,
+									jkNoGsmOutput);
 			font = iterationResultModels._1;
 			lm = iterationResultModels._2;
 			gsm = iterationResultModels._3;
@@ -118,6 +121,10 @@ public class FontTrainer {
 			System.out.println("Writing trained gsm to " + outputGsmPath);
 			InitializeGlyphSubstitutionModel.writeGSM(gsm, outputGsmPath);
 		}
+		if (jkNoGsmOutput != null) {
+			System.out.println("Writing blank gsm to jkNoGsmOutput = " + jkNoGsmOutput);
+			InitializeGlyphSubstitutionModel.writeGSM(new NoSubGlyphSubstitutionModel(), jkNoGsmOutput);
+		}
 
 		return Tuple3(font, lm, gsm);
 	}
@@ -134,7 +141,8 @@ public class FontTrainer {
 			int numEMIters, int updateDocBatchSize, boolean noUpdateIfBatchTooSmall, boolean writeIntermediateModelsToTemp,
 			int numMstepThreads,
 			String inputDocPath, String outputPath,
-			MultiDocumentTranscriber evalSetIterationEvaluator, int evalFreq, boolean evalBatches) {
+			MultiDocumentTranscriber evalSetIterationEvaluator, int evalFreq, boolean evalBatches,
+			String jkNoGsmOutput) {
 		
 		Indexer<String> charIndexer = lm.getCharacterIndexer();
 		Indexer<String> langIndexer = lm.getLanguageIndexer();
@@ -206,6 +214,12 @@ public class FontTrainer {
 					String writePath = writeIntermediateModelsToTemp ? makeGsmPath(outputPath, iter, completedBatchesInIteration) : outputGsmPath;
 					System.out.println("Writing updated gsm to " + writePath);
 					InitializeGlyphSubstitutionModel.writeGSM(gsm, writePath);
+				}
+				if (jkNoGsmOutput != null) {
+					System.out.println("jkNoGsmOutput: Not actually estimating parameters of a new GSM.  Iter: "+iter+", batch: "+completedBatchesInIteration);
+					String writePath = writeIntermediateModelsToTemp ? makeGsmPath(outputPath, iter, completedBatchesInIteration) : jkNoGsmOutput;
+					System.out.println("Writing blank gsm to jkNoGsmOutput = " + writePath);
+					InitializeGlyphSubstitutionModel.writeGSM(new NoSubGlyphSubstitutionModel(), writePath);
 				}
 
 				// Clear counts at the end of a batch

@@ -81,6 +81,7 @@ public class BasicSingleDocumentEvaluatorAndOutputPrinter implements SingleDocum
 		//
 		// Diplomatic transcription output
 		//
+		String diplomaticTranscription = null;
 		{
 			String transcriptionOutputFilename = diplomaticTranscriptionOutputFile(outputFilenameBase);
 			
@@ -93,6 +94,8 @@ public class BasicSingleDocumentEvaluatorAndOutputPrinter implements SingleDocum
 			
 			System.out.println("Writing transcription output to " + transcriptionOutputFilename);
 			FileHelper.writeString(transcriptionOutputFilename, transcriptionOutputBuffer.toString());
+			
+			diplomaticTranscription = transcriptionOutputBuffer.toString();
 		}
 
 		//
@@ -129,7 +132,7 @@ public class BasicSingleDocumentEvaluatorAndOutputPrinter implements SingleDocum
 		//
 		// Make comparison file
 		//
-		if (allowGlyphSubstitution || goldDiplomaticLineChars != null || goldNormalizedLineChars != null) {
+		if (true) { // emop always needs the comparisons file
 			String transcriptionOutputFilename = comparisonsTranscriptionOutputFile(outputFilenameBase);
 			
 			List<String> transcriptionWithSubsOutputLines = getTranscriptionLinesWithSubs(mt.viterbiTransStates);
@@ -151,6 +154,9 @@ public class BasicSingleDocumentEvaluatorAndOutputPrinter implements SingleDocum
 				goldComparisonOutputBuffer.append("\n");
 			}
 			goldComparisonOutputBuffer.append("\n");
+			
+			goldComparisonOutputBuffer.append("Model diplomatic transcription\n");
+			goldComparisonOutputBuffer.append(diplomaticTranscription + "\n");
 			
 			if (mt.viterbiNormalizedTranscription != null || goldNormalizedChars != null) {
 				if (mt.viterbiNormalizedTranscription != null && goldNormalizedChars != null) {

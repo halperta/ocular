@@ -2,7 +2,7 @@ import com.typesafe.sbt.SbtStartScript
 
 import com.github.retronym.SbtOneJar._
 
-name := "ocular"
+name := "ocular-emop"
 
 organization := "edu.berkeley.cs.nlp"
 

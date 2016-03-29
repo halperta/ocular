@@ -3,11 +3,11 @@ cp lib/JCuda-All-0.6.0-bin-apple-x86_64/* lib/
 
 
 java -Dfile.encoding=UTF8 -Xmx1536M -Xss1M -XX:+CMSClassUnloadingEnabled -XX:MaxPermSize=256m -jar sbt-launch-*.jar "one-jar"
-JARPATH=`expr target/scala-*/ocular_*-*-one-jar.jar`
+JARPATH=`expr target/scala-*/ocular-emop_*-*-one-jar.jar`
 FILENAME=$(basename $JARPATH)
 VERSION=${FILENAME:12}
 VERSION=${VERSION::${#VERSION}-12}
-JARNAME="ocular-${VERSION}-with_dependencies.jar"
+JARNAME="ocular-emop_${VERSION}-with_dependencies.jar"
 TEMPDIR=${FILENAME::${#FILENAME}-4}
 mkdir $TEMPDIR
 mv $JARPATH $TEMPDIR

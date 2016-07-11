@@ -89,7 +89,7 @@ public class InitializeLanguageModel extends OcularRunnable {
 	}
 
 	protected void validateOptions() {
-		if (outputLmPath == null) throw new IllegalArgumentException("-lmPath not set");
+		if (outputLmPath == null) throw new IllegalArgumentException("-outputLmPath not set");
 		if (inputTextPath == null) throw new IllegalArgumentException("-inputTextPath not set");
 	}
 
@@ -315,7 +315,7 @@ public class InitializeLanguageModel extends OcularRunnable {
 	public static void writeLM(CodeSwitchLanguageModel lm, String lmPath) {
 		ObjectOutputStream out = null;
 		try {
-			new File(lmPath).getParentFile().mkdirs();
+			new File(lmPath).getAbsoluteFile().getParentFile().mkdirs();
 			out = new ObjectOutputStream(new GZIPOutputStream(new FileOutputStream(lmPath)));
 			out.writeObject(lm);
 		} catch (Exception e) {

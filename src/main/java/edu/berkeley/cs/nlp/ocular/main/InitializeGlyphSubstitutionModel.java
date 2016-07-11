@@ -43,8 +43,8 @@ public class InitializeGlyphSubstitutionModel extends OcularRunnable {
 	}
 
 	protected void validateOptions() {
-		if (inputLmPath == null) throw new IllegalArgumentException("-lmPath not set");
-		if (outputGsmPath == null) throw new IllegalArgumentException("-fontPath not set");
+		if (inputLmPath == null) throw new IllegalArgumentException("-inputLmPath not set");
+		if (outputGsmPath == null) throw new IllegalArgumentException("-outputGsmPath not set");
 	}
 
 	public void run() {
@@ -89,7 +89,7 @@ public class InitializeGlyphSubstitutionModel extends OcularRunnable {
 	public static void writeGSM(GlyphSubstitutionModel gsm, String gsmPath) {
 		ObjectOutputStream out = null;
 		try {
-			new File(gsmPath).getParentFile().mkdirs();
+			new File(gsmPath).getAbsoluteFile().getParentFile().mkdirs();
 			out = new ObjectOutputStream(new GZIPOutputStream(new FileOutputStream(gsmPath)));
 			out.writeObject(gsm);
 		} catch (Exception e) {

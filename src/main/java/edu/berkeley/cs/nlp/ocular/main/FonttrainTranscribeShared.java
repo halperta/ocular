@@ -186,12 +186,11 @@ public abstract class FonttrainTranscribeShared extends LineExtractionOptions {
 		if (evalExtractedLinesPath != null && evalInputDocPath == null) throw new IllegalArgumentException("-evalExtractedLinesPath not permitted without -evalInputDocPath.");
 
 		// Make the output directory if it doesn't exist yet
-		File outputPathFile = new File(outputPath);
-		if (!outputPathFile.exists()) outputPathFile.mkdirs();
+		new File(outputPath).mkdirs();
 		
 		//
 		
-		if (!(updateLM == (outputLmPath != null))) throw new IllegalArgumentException("-retrainLM is not as expected");
+		if (!(updateLM == (outputLmPath != null))) throw new IllegalArgumentException("-updateLM is not as expected");
 		if (!(updateGsm == (outputGsmPath != null))) throw new IllegalArgumentException("-updateGsm is not as expected");
 		if (!(allowGlyphSubstitution == (inputGsmPath != null || outputGsmPath != null))) throw new IllegalArgumentException("-allowGlyphSubstitution is not as expected");
 	}

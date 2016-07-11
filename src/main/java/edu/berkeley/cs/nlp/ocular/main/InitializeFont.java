@@ -61,8 +61,8 @@ public class InitializeFont extends OcularRunnable {
 	}
 	
 	protected void validateOptions() {
-		if (inputLmPath == null) throw new IllegalArgumentException("-lmPath not set");
-		if (outputFontPath == null) throw new IllegalArgumentException("-fontPath not set");
+		if (inputLmPath == null) throw new IllegalArgumentException("-inputLmPath not set");
+		if (outputFontPath == null) throw new IllegalArgumentException("-outputFontPath not set");
 	}
 
 	public void run() {
@@ -152,7 +152,7 @@ public class InitializeFont extends OcularRunnable {
 	public static void writeFont(Font font, String fontPath) {
 		ObjectOutputStream out = null;
 		try {
-			new File(fontPath).getParentFile().mkdirs();
+			new File(fontPath).getAbsoluteFile().getParentFile().mkdirs();
 			out = new ObjectOutputStream(new GZIPOutputStream(new FileOutputStream(fontPath)));
 			out.writeObject(font);
 		} catch (Exception e) {

@@ -1,6 +1,7 @@
 package edu.berkeley.cs.nlp.ocular.main;
 
 import java.util.List;
+import java.util.Set;
 
 import edu.berkeley.cs.nlp.ocular.data.Document;
 import edu.berkeley.cs.nlp.ocular.data.LazyRawImageLoader;
@@ -48,7 +49,9 @@ public class TrainFont extends FonttrainTranscribeShared {
 		if (outputFontPath == null) throw new IllegalArgumentException("-outputFontPath is required for font training.");
 	}
 
-	public void run() {
+	public void run(List<String> commandLineArgs) {
+		Set<OutputFormat> outputFormats = parseOutputFormats();
+		
 		CodeSwitchLanguageModel initialLM = loadInputLM();
 		Font initialFont = loadInputFont();
 		BasicGlyphSubstitutionModelFactory gsmFactory = makeGsmFactory(initialLM);
@@ -60,7 +63,7 @@ public class TrainFont extends FonttrainTranscribeShared {
 		DecoderEM decoderEM = makeDecoder(charIndexer);
 
 		boolean evalCharIncludesDiacritic = true;
-		SingleDocumentEvaluatorAndOutputPrinter documentOutputPrinterAndEvaluator = new BasicSingleDocumentEvaluatorAndOutputPrinter(charIndexer, langIndexer, allowGlyphSubstitution, evalCharIncludesDiacritic);
+		SingleDocumentEvaluatorAndOutputPrinter documentOutputPrinterAndEvaluator = new BasicSingleDocumentEvaluatorAndOutputPrinter(charIndexer, langIndexer, allowGlyphSubstitution, evalCharIncludesDiacritic, commandLineArgs);
 		
 		List<String> inputDocPathList = getInputDocPathList();
 		List<Document> inputDocuments = LazyRawImageLoader.loadDocuments(inputDocPathList, extractedLinesPath, numDocs, numDocsToSkip, uniformLineHeight, binarizeThreshold, crop);
@@ -79,7 +82,7 @@ public class TrainFont extends FonttrainTranscribeShared {
 				gsmFactory, documentOutputPrinterAndEvaluator,
 				numEMIters, updateDocBatchSize > 0 ? updateDocBatchSize : inputDocuments.size(), false, true,
 				numMstepThreads,
-				newInputDocPath, outputPath,
+				newInputDocPath, outputPath, outputFormats,
 				evalSetEvaluator, evalFreq, evalBatches,
 				jkNoGsmOutput);
 	}

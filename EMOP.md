@@ -1,5 +1,13 @@
 # EMOP Ocular
 
+## Using EMOP Ocular
+
+    git clone https://github.com/Early-Modern-OCR/ocular.git
+    cd ocular
+    git checkout emop
+    ./make_jar.sh
+
+
 ## EMOP-specific differences from tberg12/master
 
 (Check with `git checkout emop; git diff master`.)
@@ -31,10 +39,8 @@
 
 ## Updating EMOP branch with changes to tberg12/master version
 
-    git clone ocular-emop
-    cd ocular-emop
+    git remote add tberg git@github.com:tberg12/ocular.git  # only the first time
     git checkout master
-    git remote add tberg git@github.com:tberg12/ocular.git
     git pull tberg master
     git checkout emop
     git merge master

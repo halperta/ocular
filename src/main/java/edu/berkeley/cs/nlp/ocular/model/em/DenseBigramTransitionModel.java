@@ -2,7 +2,7 @@ package edu.berkeley.cs.nlp.ocular.model.em;
 
 import edu.berkeley.cs.nlp.ocular.data.textreader.Charset;
 import edu.berkeley.cs.nlp.ocular.lm.LanguageModel;
-import arrays.a;
+import tberg.murphy.arrays.a;
 
 /**
  * @author Taylor Berg-Kirkpatrick (tberg@eecs.berkeley.edu)
@@ -15,8 +15,6 @@ public class DenseBigramTransitionModel {
 	private double[][] backwardTrans;
 	
 	public DenseBigramTransitionModel(LanguageModel lm) {
-		assert lm.getMaxOrder() >= 2;
-		
 		int numC = lm.getCharacterIndexer().size();
 		
 		this.starts = new double[numC];

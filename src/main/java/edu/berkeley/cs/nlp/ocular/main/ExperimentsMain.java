@@ -10,7 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import arrays.a;
+import tberg.murphy.arrays.a;
 import edu.berkeley.cs.nlp.ocular.data.Document;
 import edu.berkeley.cs.nlp.ocular.data.TextAndLineImagesLoader;
 import edu.berkeley.cs.nlp.ocular.eval.Evaluator;
@@ -20,13 +20,14 @@ import edu.berkeley.cs.nlp.ocular.image.ImageUtils;
 import edu.berkeley.cs.nlp.ocular.image.ImageUtils.PixelType;
 import edu.berkeley.cs.nlp.ocular.image.Visualizer;
 import edu.berkeley.cs.nlp.ocular.lm.NgramLanguageModel;
+import edu.berkeley.cs.nlp.ocular.lm.SingleLanguageModel;
 import edu.berkeley.cs.nlp.ocular.model.CharacterTemplate;
 import edu.berkeley.cs.nlp.ocular.model.em.BeamingSemiMarkovDP;
 import edu.berkeley.cs.nlp.ocular.model.em.CUDAInnerLoop;
 import edu.berkeley.cs.nlp.ocular.model.em.DefaultInnerLoop;
 import edu.berkeley.cs.nlp.ocular.model.em.DenseBigramTransitionModel;
 import edu.berkeley.cs.nlp.ocular.model.em.EmissionCacheInnerLoop;
-import edu.berkeley.cs.nlp.ocular.model.em.OpenCLInnerLoop;
+import edu.berkeley.cs.nlp.ocular.model.em.JOCLInnerLoop;
 import edu.berkeley.cs.nlp.ocular.model.emission.CachingEmissionModel;
 import edu.berkeley.cs.nlp.ocular.model.emission.CachingEmissionModelExplicitOffset;
 import edu.berkeley.cs.nlp.ocular.model.emission.EmissionModel;
@@ -35,11 +36,11 @@ import edu.berkeley.cs.nlp.ocular.model.transition.CharacterNgramTransitionModel
 import edu.berkeley.cs.nlp.ocular.model.transition.SparseTransitionModel;
 import edu.berkeley.cs.nlp.ocular.model.transition.SparseTransitionModel.TransitionState;
 import edu.berkeley.cs.nlp.ocular.util.Tuple2;
-import fig.Execution;
-import fig.Option;
-import fileio.f;
-import indexer.Indexer;
-import threading.BetterThreader;
+import tberg.murphy.fig.Execution;
+import tberg.murphy.fig.Option;
+import tberg.murphy.fileio.f;
+import tberg.murphy.indexer.Indexer;
+import tberg.murphy.threading.BetterThreader;
 
 /**
  * @author Taylor Berg-Kirkpatrick (tberg@eecs.berkeley.edu)
@@ -121,7 +122,7 @@ public class ExperimentsMain implements Runnable {
 		if (emissionEngine == EmissionCacheInnerLoopType.DEFAULT) {
 			emissionInnerLoop = new DefaultInnerLoop(numEmissionCacheThreads);
 		} else if (emissionEngine == EmissionCacheInnerLoopType.OPENCL) {
-			emissionInnerLoop = new OpenCLInnerLoop(numEmissionCacheThreads);
+			emissionInnerLoop = new JOCLInnerLoop(numEmissionCacheThreads);
 		} else if (emissionEngine == EmissionCacheInnerLoopType.CUDA) {
 			emissionInnerLoop = new CUDAInnerLoop(numEmissionCacheThreads, cudaDeviceID);
 		}
@@ -134,7 +135,7 @@ public class ExperimentsMain implements Runnable {
 		for (Document doc : documents) {
 			System.out.println("Loading LM..");
 			boolean useLongS = ((TextAndLineImagesLoader.TextAndLineImagesDocument) doc).useLongS();
-			final NgramLanguageModel lm = (useLongS ? LMTrainMain.readLM(lmDir+"/"+lmBaseName+"_longs.lmser") : LMTrainMain.readLM(lmDir+"/"+lmBaseName+".lmser"));
+			final SingleLanguageModel lm = (useLongS ? LMTrainMain.readLM(lmDir+"/"+lmBaseName+"_longs.lmser") : LMTrainMain.readLM(lmDir+"/"+lmBaseName+".lmser"));
 			final Indexer<String> charIndexer = lm.getCharacterIndexer();
 			
 			System.out.println("Loading font initializer..");
@@ -154,9 +155,9 @@ public class ExperimentsMain implements Runnable {
 			
 			SparseTransitionModel forwardTransitionModel = null;
 			if (markovVerticalOffset) {
-				forwardTransitionModel = new CharacterNgramTransitionModelMarkovOffset(lm, lm.getMaxOrder());
+				forwardTransitionModel = new CharacterNgramTransitionModelMarkovOffset(lm);
 			} else {
-				forwardTransitionModel = new CharacterNgramTransitionModel(lm, lm.getMaxOrder());
+				forwardTransitionModel = new CharacterNgramTransitionModel(lm);
 			}
 			
 			DenseBigramTransitionModel backwardTransitionModel = new DenseBigramTransitionModel(lm);

@@ -16,7 +16,7 @@ import java.util.Set;
 import edu.berkeley.cs.nlp.ocular.util.StringHelper;
 import edu.berkeley.cs.nlp.ocular.util.Tuple2;
 import edu.berkeley.cs.nlp.ocular.util.Tuple3;
-import indexer.Indexer;
+import tberg.murphy.indexer.Indexer;
 
 /**
  * @author Dan Garrette (dhgarrette@gmail.com)
@@ -500,8 +500,8 @@ public class Charset {
 	/**
 	 * Convert character into unicode precomposed and combining characters
 	 */
-	public static String unescapeChar(String c) {
-		if (c.equals("\\\\")) return c;
+	public static String unescapeChar(String c, boolean precomposedOnly) {
+		if (c.equals("\\\\")) return "\\";
 		
 		Tuple2<String,List<String>> letterAndNormalDiacritics = normalizeCharSeparateDiacritics(c); // use combining chars only (and make sure it's a valid character)
 		String baseLetter = letterAndNormalDiacritics._1;
@@ -516,49 +516,36 @@ public class Charset {
 		String precomposed = COMBINED_TO_PRECOMPOSED_MAP.get(baseLetter + firstDiacritic); 
 		if (precomposed != null)
 			b.append(precomposed);
-		else 
-			b.append(baseLetter).append(firstDiacritic);
+		else {
+			b.append(baseLetter);
+			if (!precomposedOnly) b.append(firstDiacritic);
+		}
 
-		// Handle the rest of the diacritics
-		for (int i = 1; i < diacritics.size(); ++i) {
-			b.append(diacritics.get(i));
+		if (precomposedOnly) {
+			// Handle the rest of the diacritics
+			for (int i = (precomposed != null ? 1 : 0); i < diacritics.size(); ++i) {
+				String escape = COMBINING_TO_ESCAPE_MAP.get(diacritics.get(i));
+				if (escape != null)
+					b.insert(0, escape);
+				else
+					b.append(StringHelper.toUnicode(diacritics.get(i)));
+			}
+		}
+		else {
+			// Handle the rest of the diacritics
+			for (int i = 1; i < diacritics.size(); ++i) {
+				b.append(diacritics.get(i));
+			}
 		}
 		
 		return b.toString();
 	}
 
 	/**
-	 * Convert character into a precomposed character (if applicable) and explicit escape sequences
+	 * Convert character into unicode precomposed and combining characters
 	 */
-	public static String unescapeCharPrecomposedOnly(String c) {
-		if (c.equals("\\\\")) return c;
-		
-		Tuple2<String,List<String>> letterAndNormalDiacritics = normalizeCharSeparateDiacritics(c); // use combining chars only (and make sure it's a valid character)
-		String baseLetter = letterAndNormalDiacritics._1;
-		List<String> diacritics = letterAndNormalDiacritics._2;
-		
-		if (diacritics.isEmpty()) return baseLetter;
-		
-		StringBuilder b = new StringBuilder();
-		
-		// Attempt to make a precomposed letter, falling back to composed otherwise
-		String firstDiacritic = diacritics.get(0);
-		String precomposed = COMBINED_TO_PRECOMPOSED_MAP.get(baseLetter + firstDiacritic); 
-		if (precomposed != null)
-			b.append(precomposed);
-		else 
-			b.append(baseLetter);
-
-		// Handle the rest of the diacritics
-		for (int i = (precomposed != null ? 1 : 0); i < diacritics.size(); ++i) {
-			String escape = COMBINING_TO_ESCAPE_MAP.get(diacritics.get(i));
-			if (escape != null)
-				b.insert(0, escape);
-			else
-				b.append(StringHelper.toUnicode(diacritics.get(i)));
-		}
-		
-		return b.toString();
+	public static String unescapeChar(String c) {
+		return unescapeChar(c, false);
 	}
 
 	/**

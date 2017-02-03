@@ -24,13 +24,13 @@ import edu.berkeley.cs.nlp.ocular.model.DecoderEM;
 import edu.berkeley.cs.nlp.ocular.model.em.CUDAInnerLoop;
 import edu.berkeley.cs.nlp.ocular.model.em.DefaultInnerLoop;
 import edu.berkeley.cs.nlp.ocular.model.em.EmissionCacheInnerLoop;
-import edu.berkeley.cs.nlp.ocular.model.em.OpenCLInnerLoop;
+import edu.berkeley.cs.nlp.ocular.model.em.JOCLInnerLoop;
 import edu.berkeley.cs.nlp.ocular.model.emission.CachingEmissionModel.CachingEmissionModelFactory;
 import edu.berkeley.cs.nlp.ocular.model.emission.CachingEmissionModelExplicitOffset.CachingEmissionModelExplicitOffsetFactory;
 import edu.berkeley.cs.nlp.ocular.model.emission.EmissionModel.EmissionModelFactory;
 import edu.berkeley.cs.nlp.ocular.util.StringHelper;
-import fig.Option;
-import indexer.Indexer;
+import tberg.murphy.fig.Option;
+import tberg.murphy.indexer.Indexer;
 
 /**
  * @author Taylor Berg-Kirkpatrick (tberg@eecs.berkeley.edu)
@@ -41,7 +41,7 @@ public abstract class FonttrainTranscribeShared extends LineExtractionOptions {
 	@Option(gloss = "Path of the directory that will contain output transcriptions.")
 	public static String outputPath = null; // Required.
 
-	public static enum OutputFormat { DIPL, NORM, NORMLINES, COMP, HTML, ALTO };
+	public static enum OutputFormat { DIPL, NORM, NORMLINES, COMP, HTML, ALTO, WHITESPACE };
 	@Option(gloss = "Output formats to be generated. Choose from one or multiple of {dipl,norm,normlines,comp,html,alto}, comma-separated.  dipl = diplomatic, norm = normalized (lines joined), normlines = normalized (separate lines), comp = comparisons.  Default: dipl,norm if -allowGlyphSubstitution=true; dipl otherwise.")
 	public static String outputFormats = "";
 
@@ -307,7 +307,7 @@ public abstract class FonttrainTranscribeShared extends LineExtractionOptions {
 	protected static EmissionCacheInnerLoop getEmissionInnerLoop() {
 		switch (emissionEngine) {
 			case DEFAULT: return new DefaultInnerLoop(numEmissionCacheThreads);
-			case OPENCL: return new OpenCLInnerLoop(numEmissionCacheThreads);
+			case OPENCL: return new JOCLInnerLoop(numEmissionCacheThreads);
 			case CUDA: return new CUDAInnerLoop(numEmissionCacheThreads, cudaDeviceID);
 		}
 		throw new RuntimeException("emissionEngine=" + emissionEngine + " not supported");

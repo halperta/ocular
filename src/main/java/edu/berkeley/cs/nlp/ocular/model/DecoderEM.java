@@ -20,7 +20,7 @@ import edu.berkeley.cs.nlp.ocular.model.transition.CodeSwitchTransitionModel;
 import edu.berkeley.cs.nlp.ocular.model.transition.SparseTransitionModel;
 import edu.berkeley.cs.nlp.ocular.model.transition.SparseTransitionModel.TransitionState;
 import edu.berkeley.cs.nlp.ocular.util.Tuple2;
-import threading.BetterThreader;
+import tberg.murphy.threading.BetterThreader;
 
 /**
  * @author Taylor Berg-Kirkpatrick (tberg@eecs.berkeley.edu)
@@ -56,14 +56,14 @@ public class DecoderEM {
 		this.decodeBatchSize = decodeBatchSize;
 	}
 
-	public Tuple2<Tuple2<TransitionState[][], int[][]>, Double> computeEStep(
+	public Tuple2<DecodeState[][], Double> computeEStep(
 			Document doc, boolean updateFontParameterCounts,
 			CodeSwitchLanguageModel lm, GlyphSubstitutionModel gsm, final CharacterTemplate[] templates,
 			DenseBigramTransitionModel backwardTransitionModel) {
 		
 		final PixelType[][][] pixels = doc.loadLineImages();
-		TransitionState[][] decodeStates = new TransitionState[pixels.length][0];
-		int[][] decodeWidths = new int[pixels.length][0];
+		
+		DecodeState[][] allDecodeStates = new DecodeState[pixels.length][0];
 
 		int totalNanoTime = 0;
 		double totalJointLogProb = 0.0;
@@ -83,17 +83,17 @@ public class DecoderEM {
 			}
 
 			System.out.println("Initializing EmissionModel    " + (new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(Calendar.getInstance().getTime())));
-			final EmissionModel emissionModel = emissionModelFactory.make(templates, batchPixels);
+			final EmissionModel batchEmissionModel = emissionModelFactory.make(templates, batchPixels);
 			System.out.println("Rebuilding cache    " + (new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(Calendar.getInstance().getTime())));
 			//long emissionCacheNanoTime = System.nanoTime();
-			emissionModel.rebuildCache();
+			batchEmissionModel.rebuildCache();
 			System.out.println("Done rebuilding cache    " + (new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(Calendar.getInstance().getTime())));
 			//overallEmissionCacheNanoTime += (System.nanoTime() - emissionCacheNanoTime);
 
 			long nanoTime = System.nanoTime();
 			System.out.println("Constructing forwardTransitionModel");
 			SparseTransitionModel forwardTransitionModel = constructTransitionModel(lm, gsm);
-			BeamingSemiMarkovDP dp = new BeamingSemiMarkovDP(emissionModel, forwardTransitionModel, backwardTransitionModel);
+			BeamingSemiMarkovDP dp = new BeamingSemiMarkovDP(batchEmissionModel, forwardTransitionModel, backwardTransitionModel);
 			System.out.println("Ready to run decoder");
 			Tuple2<Tuple2<TransitionState[][], int[][]>, Double> decodeStatesAndWidthsAndJointLogProb = dp.decode(beamSize, numDecodeThreads);
 			System.out.println("Done running decoder");
@@ -101,20 +101,30 @@ public class DecoderEM {
 			final TransitionState[][] batchDecodeStates = decodeStatesAndWidthsAndJointLogProb._1._1;
 			final int[][] batchDecodeWidths = decodeStatesAndWidthsAndJointLogProb._1._2;
 			totalJointLogProb += decodeStatesAndWidthsAndJointLogProb._2;
-			for (int line = 0; line < emissionModel.numSequences(); ++line) {
-				decodeStates[startLine + line] = batchDecodeStates[line];
-				decodeWidths[startLine + line] = batchDecodeWidths[line];
+			for (int batchLine = 0; batchLine < batchEmissionModel.numSequences(); ++batchLine) {
+				int line = startLine + batchLine;
+				TransitionState[] decodeStates = batchDecodeStates[batchLine];
+				int[] decodeWidths = batchDecodeWidths[batchLine];
+				allDecodeStates[line] = new DecodeState[decodeStates.length];
+				int stateStartCol = 0;
+				for (int di=0; di<decodeStates.length; ++di) {
+					int charAndPadWidth = decodeWidths[di];
+					int padWidth = batchEmissionModel.getPadWidth(batchLine, stateStartCol, decodeStates[di], charAndPadWidth);
+					int exposure = batchEmissionModel.getExposure(batchLine, stateStartCol, decodeStates[di], charAndPadWidth);
+					int verticalOffset = batchEmissionModel.getOffset(batchLine, stateStartCol, decodeStates[di], charAndPadWidth);
+					allDecodeStates[line][di] = new DecodeState(decodeStates[di], charAndPadWidth, padWidth, exposure, verticalOffset);
+					stateStartCol += charAndPadWidth;
+				}
 			}
 
 			if (updateFontParameterCounts) {
 				System.out.println("Ready to run increment counts");
-				incrementCounts(emissionModel, batchDecodeStates, batchDecodeWidths);
+				incrementCounts(batchEmissionModel, batchDecodeStates, batchDecodeWidths);
 			}
-			
 		}
 		System.out.println("Decode: " + (totalNanoTime / 1000000) + "ms");
 		double avgLogProb = totalJointLogProb / numBatches;
-		return Tuple2(Tuple2(decodeStates, decodeWidths), avgLogProb);
+		return Tuple2(allDecodeStates, avgLogProb);
 	}
 
 	private SparseTransitionModel constructTransitionModel(CodeSwitchLanguageModel codeSwitchLM, GlyphSubstitutionModel codeSwitchGSM) {
@@ -136,10 +146,10 @@ public class DecoderEM {
 		else { // only one language, default to original (monolingual) Ocular code because it will be faster.
 			SingleLanguageModel singleLm = codeSwitchLM.get(0);
 			if (markovVerticalOffset) {
-				transitionModel = new CharacterNgramTransitionModelMarkovOffset(singleLm, singleLm.getMaxOrder());
+				transitionModel = new CharacterNgramTransitionModelMarkovOffset(singleLm);
 				System.out.println("Using OnlyOneLanguageCodeSwitchLM and CharacterNgramTransitionModelMarkovOffset");
 			} else {
-				transitionModel = new CharacterNgramTransitionModel(singleLm, singleLm.getMaxOrder());
+				transitionModel = new CharacterNgramTransitionModel(singleLm);
 				System.out.println("Using OnlyOneLanguageCodeSwitchLM and CharacterNgramTransitionModel");
 			}
 		}

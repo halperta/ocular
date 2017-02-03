@@ -152,8 +152,8 @@ public class BasicSingleDocumentEvaluatorAndOutputPrinter implements SingleDocum
 		//
 		// Make comparison file
 		//
-		// if ((allowGlyphSubstitution || goldDiplomaticLineChars != null || goldNormalizedLineChars != null) && outputFormats.contains(COMP)) {
-		// if (outputFormats.contains(COMP)) {
+		//if ((allowGlyphSubstitution || goldDiplomaticLineChars != null || goldNormalizedLineChars != null) && outputFormats.contains(COMP)) {
+		//if (outputFormats.contains(COMP)) {
 		if (true) { // emop always needs the comparisons file
 			String transcriptionOutputFilename = comparisonsTranscriptionOutputFile(outputFilenameBase);
 			

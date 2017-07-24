@@ -1,8 +1,6 @@
 package edu.berkeley.cs.nlp.ocular.main;
 
-import static edu.berkeley.cs.nlp.ocular.main.FonttrainTranscribeShared.OutputFormat.DIPL;
-import static edu.berkeley.cs.nlp.ocular.main.FonttrainTranscribeShared.OutputFormat.NORM;
-import static edu.berkeley.cs.nlp.ocular.main.FonttrainTranscribeShared.OutputFormat.NORMLINES;
+import static edu.berkeley.cs.nlp.ocular.main.FonttrainTranscribeShared.OutputFormat.*;
 import static edu.berkeley.cs.nlp.ocular.util.CollectionHelper.makeList;
 
 import java.io.File;

@@ -84,6 +84,7 @@ public class TrainFont extends FonttrainTranscribeShared {
 				numMstepThreads,
 				newInputDocPath, outputPath, outputFormats,
 				evalSetEvaluator, evalFreq, evalBatches,
+				skipFailedDocs,
 				jkNoGsmOutput);
 	}
 

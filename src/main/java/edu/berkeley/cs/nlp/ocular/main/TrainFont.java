@@ -66,7 +66,7 @@ public class TrainFont extends FonttrainTranscribeShared {
 		SingleDocumentEvaluatorAndOutputPrinter documentOutputPrinterAndEvaluator = new BasicSingleDocumentEvaluatorAndOutputPrinter(charIndexer, langIndexer, allowGlyphSubstitution, evalCharIncludesDiacritic, commandLineArgs);
 		
 		List<String> inputDocPathList = getInputDocPathList();
-		List<Document> inputDocuments = LazyRawImageLoader.loadDocuments(inputDocPathList, extractedLinesPath, numDocs, numDocsToSkip, uniformLineHeight, binarizeThreshold, crop);
+		List<Document> inputDocuments = LazyRawImageLoader.loadDocuments(inputDocPathList, extractedLinesPath, numDocs, numDocsToSkip, uniformLineHeight, binarizeThreshold, crop, getLineExtractor());
 		if (inputDocuments.isEmpty()) throw new NoDocumentsFoundException();
 		if (updateDocBatchSize > 0 && inputDocuments.size() < updateDocBatchSize) throw new RuntimeException("The number of available documents is less than -updateDocBatchSize!");
 		

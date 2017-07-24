@@ -3,6 +3,7 @@ package edu.berkeley.cs.nlp.ocular.data;
 import java.awt.image.BufferedImage;
 import java.io.File;
 
+import edu.berkeley.cs.nlp.ocular.preprocessing.LineExtractor;
 import edu.berkeley.cs.nlp.ocular.util.FileUtil;
 
 /**
@@ -15,14 +16,14 @@ public class LazyRawPdfImageDocument extends LazyRawImageDocument {
 	private final File pdfFile;
 	private final int pageNumber; // starts at one!
 
-	public LazyRawPdfImageDocument(File pdfFile, int pageNumber, String inputPath, int lineHeight, double binarizeThreshold, boolean crop, String extractedLinesPath) {
-		super(inputPath, lineHeight, binarizeThreshold, crop, extractedLinesPath);
+	public LazyRawPdfImageDocument(File pdfFile, int pageNumber, String inputPath, int lineHeight, double binarizeThreshold, boolean crop, String extractedLinesPath, LineExtractor lineExtractor) {
+		super(inputPath, lineHeight, binarizeThreshold, crop, extractedLinesPath, lineExtractor);
 		this.pdfFile = pdfFile;
 		this.pageNumber = pageNumber;
 	}
 
 	protected BufferedImage doLoadBufferedImage() {
-		System.out.println("Extracting text line images from " + pdfFile + ", page " + pageNumber);
+		System.out.println("Extracting text line images from " + pdfFile + ", page " + pageNumber + " using " + lineExtractor.getClass().getSimpleName());
 		return PdfImageReader.readPdfPageAsImage(pdfFile, pageNumber);
 	}
 	

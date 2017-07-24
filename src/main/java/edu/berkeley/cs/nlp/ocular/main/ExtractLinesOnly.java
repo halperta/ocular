@@ -23,7 +23,7 @@ public class ExtractLinesOnly extends LineExtractionOptions {
 
 	public void run(List<String> commandLineArgs) {
 		List<String> inputDocPathList = getInputDocPathList();
-		List<Document> inputDocuments = LazyRawImageLoader.loadDocuments(inputDocPathList, extractedLinesPath, numDocs, numDocsToSkip, uniformLineHeight, binarizeThreshold, crop);
+		List<Document> inputDocuments = LazyRawImageLoader.loadDocuments(inputDocPathList, extractedLinesPath, numDocs, numDocsToSkip, uniformLineHeight, binarizeThreshold, crop, getLineExtractor());
 		if (inputDocuments.isEmpty()) throw new NoDocumentsFoundException();
 		for (Document doc : inputDocuments) {
 			doc.loadLineImages();

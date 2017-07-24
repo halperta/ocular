@@ -10,6 +10,7 @@ import edu.berkeley.cs.nlp.ocular.image.ImageUtils.ConnectedComponentProcessor;
 import edu.berkeley.cs.nlp.ocular.image.ImageUtils.PixelType;
 import edu.berkeley.cs.nlp.ocular.preprocessing.Binarizer;
 import edu.berkeley.cs.nlp.ocular.preprocessing.LineExtractor;
+import edu.berkeley.cs.nlp.ocular.preprocessing.OverlappableLineExtractor;
 import tberg.murphy.arrays.a;
 import tberg.murphy.fileio.f;
 import tberg.murphy.threading.BetterThreader;
@@ -20,7 +21,7 @@ public class FirstFolioRawImageLoader {
 		private final String baseName;
 		final PixelType[][][] observations;
 		
-		public FirstFolioRawImageDocument(String inputPath, String baseName, int lineHeight, double binarizeThreshold) {
+		public FirstFolioRawImageDocument(String inputPath, String baseName, int lineHeight, double binarizeThreshold, LineExtractor lineExtractor) {
 			this.baseName = baseName;
 			double[][] levels = ImageUtils.getLevels(f.readImage(inputPath+"/"+baseName));
 			ConnectedComponentProcessor ccprocBig = new ConnectedComponentProcessor() {
@@ -49,7 +50,7 @@ public class FirstFolioRawImageLoader {
 			double[][] topPadLevels = new double[levels.length][];
 			for (int i=0; i<levels.length; ++i) topPadLevels[i] = a.append(a.add(a.zerosDouble(padHeight), 255.0), levels[i]);
 			
-			List<double[][]> lines = LineExtractor.extractLines(topPadLevels);
+			List<double[][]> lines = lineExtractor.extractLines(topPadLevels);
 			observations = new PixelType[lines.size()][][];
 			for (int i=0; i<lines.size(); ++i) {
 				if (lineHeight >= 0) {
@@ -81,7 +82,7 @@ public class FirstFolioRawImageLoader {
 		}
 	}
 	
-	public static List<Document> loadDocuments(final String inputPath, final int lineHeight, final double binarizeThreshold, final int numThreads) {
+	public static List<Document> loadDocuments(final String inputPath, final int lineHeight, final double binarizeThreshold, final LineExtractor lineExtractor, final int numThreads) {
 		System.out.println("Extracting text line images from dataset "+inputPath);
 		File dir = new File(inputPath);
 		final String[] dirList = dir.list(new FilenameFilter() {
@@ -98,7 +99,7 @@ public class FirstFolioRawImageLoader {
 		final Document[] docs = new Document[dirList.length]; 
 		BetterThreader.Function<Integer,Object> func = new BetterThreader.Function<Integer,Object>(){public void call(Integer i, Object ignore){
 			String baseName = dirList[i];
-			docs[i] = new FirstFolioRawImageDocument(inputPath, baseName, lineHeight, binarizeThreshold);
+			docs[i] = new FirstFolioRawImageDocument(inputPath, baseName, lineHeight, binarizeThreshold, lineExtractor);
 		}};
 		BetterThreader<Integer,Object> threader = new BetterThreader<Integer,Object>(func, numThreads);
 		for (int i=0; i<dirList.length; ++i) threader.addFunctionArgument(i);

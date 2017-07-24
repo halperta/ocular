@@ -4,6 +4,9 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 
+import edu.berkeley.cs.nlp.ocular.preprocessing.LineExtractor;
+import edu.berkeley.cs.nlp.ocular.preprocessing.NonOverlappingLineExtractor;
+import edu.berkeley.cs.nlp.ocular.preprocessing.OverlappableLineExtractor;
 import tberg.murphy.fig.Option;
 import tberg.murphy.fileio.f;
 
@@ -40,6 +43,9 @@ public abstract class LineExtractionOptions extends OcularRunnable {
 	@Option(gloss = "Scale all lines to have the same height?")
 	public static boolean uniformLineHeight = true;
 	
+	@Option(gloss = "Allow overlapping lines?")
+	public static boolean allowOverlappingLines = false;
+	
 
 	
 	protected void validateOptions() {
@@ -55,5 +61,12 @@ public abstract class LineExtractionOptions extends OcularRunnable {
 		return inputDocPath != null ? Arrays.asList(inputDocPath.split("[\\s+,;:]")) : f.readLines(inputDocListPath);
 	}
 
+	protected static LineExtractor getLineExtractor() {
+		if (allowOverlappingLines) {
+			return new OverlappableLineExtractor();
+		} else {
+			return new NonOverlappingLineExtractor();
+		}
+	}
 
 }

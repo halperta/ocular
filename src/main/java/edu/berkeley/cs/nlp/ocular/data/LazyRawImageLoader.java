@@ -8,6 +8,7 @@ import java.util.Comparator;
 import java.util.List;
 
 import edu.berkeley.cs.nlp.ocular.model.CharacterTemplate;
+import edu.berkeley.cs.nlp.ocular.preprocessing.LineExtractor;
 import edu.berkeley.cs.nlp.ocular.util.FileUtil;
 
 /**
@@ -19,20 +20,20 @@ import edu.berkeley.cs.nlp.ocular.util.FileUtil;
  */
 public class LazyRawImageLoader {
 
-	public static List<Document> loadDocuments(String inputPath, String extractedLinesPath, int numDocs, int numDocsToSkip) { 
-		return loadDocuments(inputPath, extractedLinesPath, numDocs, numDocsToSkip, true, 0.12, false); 
+	public static List<Document> loadDocuments(String inputPath, String extractedLinesPath, int numDocs, int numDocsToSkip, LineExtractor lineExtractor) { 
+		return loadDocuments(inputPath, extractedLinesPath, numDocs, numDocsToSkip, true, 0.12, false, lineExtractor); 
 	}
-	public static List<Document> loadDocuments(String inputPath, String extractedLinesPath, int numDocs, int numDocsToSkip, boolean uniformLineHeight, double binarizeThreshold, boolean crop) {
-		return loadDocuments(Arrays.asList(inputPath), extractedLinesPath, numDocs, numDocsToSkip, uniformLineHeight, binarizeThreshold, crop);
+	public static List<Document> loadDocuments(String inputPath, String extractedLinesPath, int numDocs, int numDocsToSkip, boolean uniformLineHeight, double binarizeThreshold, boolean crop, LineExtractor lineExtractor) {
+		return loadDocuments(Arrays.asList(inputPath), extractedLinesPath, numDocs, numDocsToSkip, uniformLineHeight, binarizeThreshold, crop, lineExtractor);
 	}
 
-	public static List<Document> loadDocuments(List<String> inputPaths, String extractedLinesPath, int numDocs, int numDocsToSkip) { 
-		return loadDocuments(inputPaths, extractedLinesPath, numDocs, numDocsToSkip, true, 0.12, false); 
+	public static List<Document> loadDocuments(List<String> inputPaths, String extractedLinesPath, int numDocs, int numDocsToSkip, LineExtractor lineExtractor) { 
+		return loadDocuments(inputPaths, extractedLinesPath, numDocs, numDocsToSkip, true, 0.12, false, lineExtractor); 
 	}
-	public static List<Document> loadDocuments(List<String> inputPaths, String extractedLinesPath, int numDocs, int numDocsToSkip, boolean uniformLineHeight, double binarizeThreshold, boolean crop) {
+	public static List<Document> loadDocuments(List<String> inputPaths, String extractedLinesPath, int numDocs, int numDocsToSkip, boolean uniformLineHeight, double binarizeThreshold, boolean crop, LineExtractor lineExtractor) {
 		List<Document> lazyDocs = new ArrayList<Document>();
 		for (String inputPath : inputPaths) {
-			lazyDocs.addAll(loadDocumentsFromDir(inputPath, extractedLinesPath, uniformLineHeight, binarizeThreshold, crop));
+			lazyDocs.addAll(loadDocumentsFromDir(inputPath, extractedLinesPath, uniformLineHeight, binarizeThreshold, crop, lineExtractor));
 		}
 
 		int actualNumDocsToSkip = Math.min(lazyDocs.size(), numDocsToSkip);
@@ -52,7 +53,7 @@ public class LazyRawImageLoader {
 		return documents;
 	}
 	
-	private static List<Document> loadDocumentsFromDir(String inputPath, String extractedLinesPath, boolean uniformLineHeight, double binarizeThreshold, boolean crop) {
+	private static List<Document> loadDocumentsFromDir(String inputPath, String extractedLinesPath, boolean uniformLineHeight, double binarizeThreshold, boolean crop, LineExtractor lineExtractor) {
 		int lineHeight = uniformLineHeight ? CharacterTemplate.LINE_HEIGHT : -1;
 
 		File dir = new File(inputPath);
@@ -66,11 +67,11 @@ public class LazyRawImageLoader {
 			else if (f.getName().endsWith(".pdf")) {
 				int numPages = PdfImageReader.numPagesInPdf(f);
 				for (int pageNumber = 1; pageNumber <= numPages; ++pageNumber) {
-					lazyDocs.add(new LazyRawPdfImageDocument(f, pageNumber, inputPath, lineHeight, binarizeThreshold, crop, extractedLinesPath));
+					lazyDocs.add(new LazyRawPdfImageDocument(f, pageNumber, inputPath, lineHeight, binarizeThreshold, crop, extractedLinesPath, lineExtractor));
 				}
 			}
 			else {
-				lazyDocs.add(new LazyRawSingleImageDocument(f, inputPath, lineHeight, binarizeThreshold, crop, extractedLinesPath));
+				lazyDocs.add(new LazyRawSingleImageDocument(f, inputPath, lineHeight, binarizeThreshold, crop, extractedLinesPath, lineExtractor));
 			}
 		}
 

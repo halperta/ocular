@@ -47,6 +47,7 @@ import edu.berkeley.cs.nlp.ocular.model.transition.CharacterNgramTransitionModel
 import edu.berkeley.cs.nlp.ocular.model.transition.CharacterNgramTransitionModelMarkovOffset;
 import edu.berkeley.cs.nlp.ocular.model.transition.SparseTransitionModel;
 import edu.berkeley.cs.nlp.ocular.model.transition.SparseTransitionModel.TransitionState;
+import edu.berkeley.cs.nlp.ocular.preprocessing.OverlappableLineExtractor;
 import edu.berkeley.cs.nlp.ocular.util.CollectionHelper;
 import edu.berkeley.cs.nlp.ocular.util.Tuple2;
 import tberg.murphy.fig.Option;
@@ -169,7 +170,7 @@ public class FirstFolioMain implements Runnable {
 		
 		List<Tuple2<String,Map<String,EvalSuffStats>>> allEvals = new ArrayList<Tuple2<String,Map<String,EvalSuffStats>>>();
 
-		List<Document> documents = FirstFolioRawImageLoader.loadDocuments(inputPath, CharacterTemplate.LINE_HEIGHT, binarizeThreshold, numMstepThreads);
+		List<Document> documents = FirstFolioRawImageLoader.loadDocuments(inputPath, CharacterTemplate.LINE_HEIGHT, binarizeThreshold, new OverlappableLineExtractor(), numMstepThreads);
 		if (documents.isEmpty()) throw new NoDocumentsFoundException();
 		for (Document doc : documents) {
 			final PixelType[][][] pixels = doc.loadLineImages();

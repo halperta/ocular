@@ -16,7 +16,6 @@ import edu.berkeley.cs.nlp.ocular.eval.Evaluator.EvalSuffStats;
 import edu.berkeley.cs.nlp.ocular.font.Font;
 import edu.berkeley.cs.nlp.ocular.image.ImageUtils.PixelType;
 import edu.berkeley.cs.nlp.ocular.image.Visualizer;
-import edu.berkeley.cs.nlp.ocular.lm.NgramLanguageModel;
 import edu.berkeley.cs.nlp.ocular.lm.SingleLanguageModel;
 import edu.berkeley.cs.nlp.ocular.model.CharacterTemplate;
 import edu.berkeley.cs.nlp.ocular.model.em.BeamingSemiMarkovDP;
@@ -32,6 +31,7 @@ import edu.berkeley.cs.nlp.ocular.model.transition.CharacterNgramTransitionModel
 import edu.berkeley.cs.nlp.ocular.model.transition.CharacterNgramTransitionModelMarkovOffset;
 import edu.berkeley.cs.nlp.ocular.model.transition.SparseTransitionModel;
 import edu.berkeley.cs.nlp.ocular.model.transition.SparseTransitionModel.TransitionState;
+import edu.berkeley.cs.nlp.ocular.preprocessing.OverlappableLineExtractor;
 import edu.berkeley.cs.nlp.ocular.util.Tuple2;
 import tberg.murphy.fig.Option;
 import tberg.murphy.fig.OptionsParser;
@@ -127,7 +127,7 @@ public class Main implements Runnable {
 		
 		List<Tuple2<String,Map<String,EvalSuffStats>>> allEvals = new ArrayList<Tuple2<String,Map<String,EvalSuffStats>>>();
 
-		List<Document> documents = RawImageLoader.loadDocuments(inputPath, CharacterTemplate.LINE_HEIGHT, binarizeThreshold, numMstepThreads);
+		List<Document> documents = RawImageLoader.loadDocuments(inputPath, CharacterTemplate.LINE_HEIGHT, binarizeThreshold, new OverlappableLineExtractor(), numMstepThreads);
 		if (documents.isEmpty()) throw new NoDocumentsFoundException();
 		for (Document doc : documents) {
 			final PixelType[][][] pixels = doc.loadLineImages();

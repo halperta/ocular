@@ -1,6 +1,7 @@
 package edu.berkeley.cs.nlp.ocular.data;
 
 import static edu.berkeley.cs.nlp.ocular.data.textreader.Charset.SPACE;
+import static edu.berkeley.cs.nlp.ocular.util.CollectionHelper.last;
 
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
@@ -22,9 +23,9 @@ import edu.berkeley.cs.nlp.ocular.image.Visualizer;
 import edu.berkeley.cs.nlp.ocular.preprocessing.Binarizer;
 import edu.berkeley.cs.nlp.ocular.preprocessing.Cropper;
 import edu.berkeley.cs.nlp.ocular.preprocessing.LineExtractor;
+import edu.berkeley.cs.nlp.ocular.preprocessing.OverlappableLineExtractor;
 import edu.berkeley.cs.nlp.ocular.preprocessing.Straightener;
 import edu.berkeley.cs.nlp.ocular.util.FileUtil;
-import static edu.berkeley.cs.nlp.ocular.util.CollectionHelper.last;
 import tberg.murphy.fileio.f;
 
 /**
@@ -42,6 +43,8 @@ public abstract class LazyRawImageDocument implements Document {
 	private PixelType[][][] observations = null;
 
 	private String extractedLinesPath = null;
+	
+	protected LineExtractor lineExtractor;
 
 	private String[][] diplomaticTextLines = null;
 	private boolean diplomaticTextLinesLoaded = false;
@@ -50,12 +53,13 @@ public abstract class LazyRawImageDocument implements Document {
 	private List<String> normalizedText = null;
 	private boolean normalizedTextLoaded = false;
 
-	public LazyRawImageDocument(String inputPath, int lineHeight, double binarizeThreshold, boolean crop, String extractedLinesPath) {
+	public LazyRawImageDocument(String inputPath, int lineHeight, double binarizeThreshold, boolean crop, String extractedLinesPath, LineExtractor lineExtractor) {
 		this.inputPath = inputPath;
 		this.lineHeight = lineHeight;
 		this.binarizeThreshold = binarizeThreshold;
 		this.crop = crop;
 		this.extractedLinesPath = extractedLinesPath;
+		this.lineExtractor = lineExtractor;
 	}
 
 	final public PixelType[][][] loadLineImages() {
@@ -83,7 +87,7 @@ public abstract class LazyRawImageDocument implements Document {
 		double[][] rotLevels = Straightener.straighten(levels);
 		double[][] cropLevels = crop ? Cropper.crop(rotLevels, binarizeThreshold) : rotLevels;
 		Binarizer.binarizeGlobal(binarizeThreshold, cropLevels);
-		List<double[][]> lines = LineExtractor.extractLines(cropLevels);
+		List<double[][]> lines = lineExtractor.extractLines(cropLevels);
 		observations = new PixelType[lines.size()][][];
 		for (int i = 0; i < lines.size(); ++i) {
 			observations[i] = imageToObservation(ImageUtils.makeImage(lines.get(i)));

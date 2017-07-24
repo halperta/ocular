@@ -1,6 +1,8 @@
 package edu.berkeley.cs.nlp.ocular.main;
 
-import static edu.berkeley.cs.nlp.ocular.main.FonttrainTranscribeShared.OutputFormat.*;
+import static edu.berkeley.cs.nlp.ocular.main.FonttrainTranscribeShared.OutputFormat.DIPL;
+import static edu.berkeley.cs.nlp.ocular.main.FonttrainTranscribeShared.OutputFormat.NORM;
+import static edu.berkeley.cs.nlp.ocular.main.FonttrainTranscribeShared.OutputFormat.NORMLINES;
 import static edu.berkeley.cs.nlp.ocular.util.CollectionHelper.makeList;
 
 import java.io.File;
@@ -315,7 +317,7 @@ public abstract class FonttrainTranscribeShared extends LineExtractionOptions {
 
 	protected static MultiDocumentTranscriber makeEvalSetEvaluator(Indexer<String> charIndexer, DecoderEM decoderEM, SingleDocumentEvaluatorAndOutputPrinter documentOutputPrinterAndEvaluator) {
 		if (evalInputDocPath != null) {
-			List<Document> evalDocuments = LazyRawImageLoader.loadDocuments(evalInputDocPath, evalExtractedLinesPath, evalNumDocs, 0, uniformLineHeight, binarizeThreshold, crop);
+			List<Document> evalDocuments = LazyRawImageLoader.loadDocuments(evalInputDocPath, evalExtractedLinesPath, evalNumDocs, 0, uniformLineHeight, binarizeThreshold, crop, getLineExtractor());
 			if (evalDocuments.isEmpty()) throw new NoDocumentsFoundException("No evaluation documents found! Checked -evalInputDocPath = "+evalInputDocPath);
 			for (Document doc : evalDocuments) {
 				if (doc.loadDiplomaticTextLines() == null & doc.loadNormalizedText() == null) 

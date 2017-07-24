@@ -76,7 +76,7 @@ public class Transcribe extends FonttrainTranscribeShared {
 		SingleDocumentEvaluatorAndOutputPrinter documentOutputPrinterAndEvaluator = new BasicSingleDocumentEvaluatorAndOutputPrinter(charIndexer, langIndexer, allowGlyphSubstitution, evalCharIncludesDiacritic, commandLineArgs);
 		
 		List<String> inputDocPathList = getInputDocPathList();
-		List<Document> inputDocuments = LazyRawImageLoader.loadDocuments(inputDocPathList, extractedLinesPath, numDocs, numDocsToSkip, uniformLineHeight, binarizeThreshold, crop);
+		List<Document> inputDocuments = LazyRawImageLoader.loadDocuments(inputDocPathList, extractedLinesPath, numDocs, numDocsToSkip, uniformLineHeight, binarizeThreshold, crop, getLineExtractor());
 		if (inputDocuments.isEmpty()) throw new NoDocumentsFoundException();
 
 		String newInputDocPath = FileUtil.lowestCommonPath(inputDocPathList);

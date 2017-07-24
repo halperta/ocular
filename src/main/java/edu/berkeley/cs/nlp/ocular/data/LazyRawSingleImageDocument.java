@@ -3,6 +3,7 @@ package edu.berkeley.cs.nlp.ocular.data;
 import java.awt.image.BufferedImage;
 import java.io.File;
 
+import edu.berkeley.cs.nlp.ocular.preprocessing.LineExtractor;
 import edu.berkeley.cs.nlp.ocular.util.FileUtil;
 import tberg.murphy.fileio.f;
 
@@ -15,13 +16,13 @@ import tberg.murphy.fileio.f;
 public class LazyRawSingleImageDocument extends LazyRawImageDocument {
 	private final File file;
 
-	public LazyRawSingleImageDocument(File file, String inputPath, int lineHeight, double binarizeThreshold, boolean crop, String extractedLinesPath) {
-		super(inputPath, lineHeight, binarizeThreshold, crop, extractedLinesPath);
+	public LazyRawSingleImageDocument(File file, String inputPath, int lineHeight, double binarizeThreshold, boolean crop, String extractedLinesPath, LineExtractor lineExtractor) {
+		super(inputPath, lineHeight, binarizeThreshold, crop, extractedLinesPath, lineExtractor);
 		this.file = file;
 	}
 
 	protected BufferedImage doLoadBufferedImage() {
-		System.out.println("Extracting text line images from " + file);
+		System.out.println("Extracting text line images from " + file + " using " + lineExtractor.getClass().getSimpleName());
 		return f.readImage(file.getPath());
   }
 	
